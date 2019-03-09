@@ -70,13 +70,24 @@ go:	mov	%cs, %ax
 
 
 ####### LAB2 ########
-
-boot_menu:
+multiboot:
+	mov	$0x03, %ah		# read cursor pos
+	xor	%bh, %bh
+	int	$0x10
+	mov	$61, %cx
+	mov	$0x0007, %bx		# page 0, attribute 7 (normal)
+	mov $bootmsg, %bp
+	mov	$0x1301, %ax		# write string, move cursor
+	int $0x10
 	
-
-
-
-
+	xor %ax, %ax 
+	int $0x16		# read input
+	cmp $49, %al	# if %al == 1
+	je	load_setup
+	cmp $50, %al	# if %al == 2
+	je	load_hello
+	jmp multiboot
+	
 
 load_hello:
 	mov $HELLOBASE, %ax
@@ -97,8 +108,6 @@ ok_load_hello:
 	.equ hello, 0x0100
 	ljmp $hello, $0			# jump there
 
-
-
 ####### LAB2 End #########
 
 
@@ -107,7 +116,7 @@ ok_load_hello:
 
 load_setup:
 	mov	$0x0000, %dx		# drive 0, head 0
-	mov	$0x0002, %cx		# sector 2, track 0
+	mov	$0x0003, %cx		# sector 3, track 0
 	mov	$0x0200, %bx		# address = 512, in INITSEG
 	.equ    AX, 0x0200+SETUPLEN
 	mov     $AX, %ax		# service 2, nr of sectors
@@ -187,7 +196,7 @@ root_defined:
 #
 # in:	es - starting address segment (normally 0x1000)
 #
-sread:	.word 1+ SETUPLEN	# sectors read of current track
+sread:	.word 2+ SETUPLEN	# sectors read of current track
 head:	.word 0			# current head
 track:	.word 0			# current track
 
@@ -283,6 +292,12 @@ kill_motor:
 
 sectors:
 	.word 0
+
+bootmsg:
+	.byte 13, 10
+	.ascii "press \"1\" for linux, \"2\" for hello, other is not allowed!"
+	.byte 13, 10
+
 
 msg1:
 	.byte 13,10

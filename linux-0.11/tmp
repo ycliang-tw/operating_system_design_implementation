@@ -1,0 +1,49 @@
+42,45d41
+< 	
+< 	### LAB2 variable
+< 	.equ HELLOLEN, 1		# length of hello-sector
+< 	.equ HELLOBASE, 0x0000	# address of hello-sector
+47d42
+< 	
+70,106d64
+< 
+< 
+< ####### LAB2 ########
+< /*
+< boot_menu:
+< 	xor %ax, %ax 
+< 	int $0x16		# read input
+< 	cmp $49, %al	# if %al == 1
+< 	je	load_setup
+< 	cmp $50, %al	# if %al == 2
+< 	je	load_hello
+< 	jmp boot_menu
+< 	
+< 
+< load_hello:
+< 	mov $HELLOBASE, %ax
+< 	mov %ax, %es
+< 	mov	$0x0000, %dx		# drive 0, head 0
+< 	mov	$0x0002, %cx		# sector 2, track 0
+< 	mov $0x1000, %bx		# int 13h ==> es:bx => 0x0100 as spec specified
+< 	.equ AX, 0x0200+HELLOLEN
+< 	mov $AX, %ax				# set up parameter for int 13h
+< 	int $0x13
+< 	jnc ok_load_hello
+< 	mov	$0x0000, %dx
+< 	mov	$0x0000, %ax		# reset the diskette
+< 	int	$0x13
+< 	jmp	load_hello
+< 
+< ok_load_hello:
+< 	.equ hello, 0x0100
+< 	ljmp $hello, $0			# jump there
+< */
+< 
+< ####### LAB2 End #########
+< 
+< 
+112c70
+< 	mov	$0x0003, %cx		# sector 3, track 0
+---
+> 	mov	$0x0002, %cx		# sector 2, track 0

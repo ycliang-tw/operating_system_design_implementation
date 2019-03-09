@@ -10,8 +10,8 @@ _start:
     xor %bh, %bh
     int $0x10
      
-    mov $24, %cx
-    mov $0x000d, %bx        # page 0, attribute 7 (normal)
+    mov $18, %cx
+    mov $0x0009, %bx        # page 0, attribute 7 (normal)
     #lea    msg1, %bp
     mov     $msg1, %bp
     mov $0x1301, %ax        # write string, move cursor

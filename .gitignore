@@ -1,0 +1,5 @@
+.gitignore 
+cscope*
+tags
+*.o
+*.swp

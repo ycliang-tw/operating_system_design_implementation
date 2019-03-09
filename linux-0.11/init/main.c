@@ -140,6 +140,7 @@ void main(void)		/* This really IS void, no error here. */
 //	panic(""); 
 	move_to_user_mode();
 	if (!fork()) {		/* we count on this going ok */
+
 		init();
 	}
 /*
@@ -201,6 +202,7 @@ void init(void)
 			(void) open("/dev/tty0",O_RDWR,0);
 			(void) dup(0);
 			(void) dup(0);
+			printf("Hello, 0656133\n");
 			_exit(execve("/bin/sh",argv,envp));
 		}
 		while (1)

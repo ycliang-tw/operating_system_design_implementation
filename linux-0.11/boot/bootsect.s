@@ -39,7 +39,12 @@
 	.equ SETUPSEG, 0x9020		# setup starts here
 	.equ SYSSEG, 0x1000		# system loaded at 0x10000 (65536).
 	.equ ENDSEG, SYSSEG + SYSSIZE	# where to stop loading
+	
+	### LAB2 variable
+	.equ HELLOLEN, 1		# length of hello-sector
+	.equ HELLOBASE, 0x0000	# address of hello-sector
 
+	
 # ROOT_DEV:	0x000 - same type of floppy as boot.
 #		0x301 - first partition on first drive etc
 	.equ ROOT_DEV, 0x301
@@ -61,6 +66,41 @@ go:	mov	%cs, %ax
 # put stack at 0x9ff00.
 	mov	%ax, %ss
 	mov	$0xFF00, %sp		# arbitrary value >>512
+
+
+
+####### LAB2 ########
+
+boot_menu:
+	
+
+
+
+
+
+load_hello:
+	mov $HELLOBASE, %ax
+	mov %ax, %es
+	mov	$0x0000, %dx		# drive 0, head 0
+	mov	$0x0002, %cx		# sector 2, track 0
+	mov $0x1000, %bx		# int 13h ==> es:bx => 0x0100 as spec specified
+	.equ AX, 0x0200+HELLOLEN
+	mov $AX, %ax				# set up parameter for int 13h
+	int $0x13
+	jnc ok_load_hello
+	mov	$0x0000, %dx
+	mov	$0x0000, %ax		# reset the diskette
+	int	$0x13
+	jmp	load_hello
+
+ok_load_hello:
+	.equ hello, 0x0100
+	ljmp $hello, $0			# jump there
+
+
+
+####### LAB2 End #########
+
 
 # load the setup-sectors directly after the bootblock.
 # Note that 'es' is already set up.

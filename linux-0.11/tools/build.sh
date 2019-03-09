@@ -39,7 +39,7 @@ dd if=$setup seek=2 bs=512 count=4 of=$IMAGE 2>&1 >/dev/null
 [ ! -f "$system" ] && echo "there is no system binary file there" && exit -1
 system_size=`wc -c $system |cut -d" " -f1`
 [ $system_size -gt $SYS_SIZE ] && echo "the system binary is too big" && exit -1
-dd if=$system seek=6 bs=512 count=$((2888-1-4)) of=$IMAGE 2>&1 >/dev/null
+dd if=$system seek=6 bs=512 count=$((2888-1-1-4)) of=$IMAGE 2>&1 >/dev/null
 
 # Set "device" for the root image file
 echo -ne "\x$DEFAULT_MINOR_ROOT\x$DEFAULT_MAJOR_ROOT" | dd ibs=1 obs=1 count=2 seek=508 of=$IMAGE conv=notrunc  2>&1 >/dev/null

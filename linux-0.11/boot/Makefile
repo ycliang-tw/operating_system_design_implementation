@@ -2,7 +2,7 @@ include ../Makefile.header
 
 LDFLAGS	+= -Ttext 0
 
-all: bootsect setup
+all: bootsect setup hello
 
 bootsect: bootsect.s
 	@$(AS) -o bootsect.o bootsect.s
@@ -25,4 +25,4 @@ hello: hello.s
 
 
 clean:
-	@rm -f bootsect bootsect.o setup setup.o head.o
+	@rm -f bootsect bootsect.o setup setup.o head.o hello hello.o

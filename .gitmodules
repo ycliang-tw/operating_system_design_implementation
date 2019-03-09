@@ -1,0 +1,3 @@
+[submodule "seabios"]
+	path = seabios
+	url = http://grass8.cs.nctu.edu.tw:8888/0656133/seabios.git

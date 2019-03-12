@@ -75,7 +75,7 @@ multiboot:
 	xor	%bh, %bh
 	int	$0x10
 	mov	$61, %cx
-	mov	$0x0007, %bx		# page 0, attribute 7 (normal)
+	mov	$0x000f, %bx		# page 0, attribute 7 (normal)
 	mov $bootmsg, %bp
 	mov	$0x1301, %ax		# write string, move cursor
 	int $0x10
@@ -196,7 +196,7 @@ root_defined:
 #
 # in:	es - starting address segment (normally 0x1000)
 #
-sread:	.word 2+ SETUPLEN	# sectors read of current track
+sread:	.word 2+ SETUPLEN	# sectors read of current track, 2 == bootsect(1 sector) + hello(1 sector), SETUPLEN(4 sector)
 head:	.word 0			# current head
 track:	.word 0			# current track
 
@@ -293,11 +293,13 @@ kill_motor:
 sectors:
 	.word 0
 
+
+## LAB2 msg ##
 bootmsg:
 	.byte 13, 10
 	.ascii "press \"1\" for linux, \"2\" for hello, other is not allowed!"
 	.byte 13, 10
-
+## LAB2 msg end ##
 
 msg1:
 	.byte 13,10

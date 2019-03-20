@@ -7,11 +7,11 @@ AS	= as --32
 LD	= ld
 #LDFLAGS = -m elf_i386 -x 
 LDFLAGS = -m elf_i386
-CC	= gcc
+CC	= gcc-4.8
 CFLAGS  = -g -m32 -fno-builtin -fno-stack-protector -fomit-frame-pointer -fstrength-reduce #-Wall
 
-CPP	= cpp -nostdinc
+CPP	= cpp-4.8 -nostdinc
 AR	= ar
 
 # we should use -fno-stack-protector with gcc 4.3
-gcc_version=$(shell ls -l `which gcc` | tr '-' '\n' | tail -1)
+gcc_version=$(shell ls -l `which gcc-4.8` | tr '-' '\n' | tail -1)

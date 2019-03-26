@@ -17,6 +17,16 @@ static struct Trapframe *last_tf;
  */
 
 
+struct Gatedesc idt[256];
+struct Pseudodesc idt_desc = {
+	.pd_lim = (uint16_t)(sizeof(idt) - 1),
+	.pd_base = (uint32_t)idt
+};
+
+extern void irq_kbd();
+extern void irq_timer();
+
+
 /* For debugging */
 static const char *trapname(int trapno)
 {
@@ -117,9 +127,18 @@ trap_dispatch(struct Trapframe *tf)
    *       We prepared the keyboard handler and timer handler for you
    *       already. Please reference in kernel/kbd.c and kernel/timer.c
    */
-
+	switch(tf->tf_trapno){
+		case IRQ_OFFSET + IRQ_KBD:
+			kbd_intr();
+			break;
+		case IRQ_OFFSET + IRQ_TIMER:
+			timer_handler();
+			break;
 	// Unexpected trap: The user process or the kernel has a bug.
-	print_trapframe(tf);
+		default:
+			print_trapframe(tf);
+			break;
+	}
 }
 
 /* 
@@ -159,9 +178,10 @@ void trap_init()
    *       There is a data structure called Pseudodesc in mmu.h which might
    *       come in handy for you when filling up the argument of "lidt"
    */
-
 	/* Keyboard interrupt setup */
+	SETGATE(idt[IRQ_OFFSET + IRQ_KBD], 0, GD_KT, irq_kbd, 0);
 	/* Timer Trap setup */
-  /* Load IDT */
-
+	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], 0, GD_KT, irq_timer, 0);
+ 	/* Load IDT */
+	lidt(&idt_desc);
 }

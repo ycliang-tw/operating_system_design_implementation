@@ -60,13 +60,13 @@ gdt:
 #       easy-to-use macro when defining segmentation type.
 
 	SEG_NULL    # NULL segment
-	SEG(0x9a, 0x00000000, 0x007ff000)     # Kernel code segment
-	SEG(0x92, 0x00000000, 0x007ff000)     # Kernel data segment
+	SEG(STA_X | STA_R , 0, 0x7ff << 12)     # Kernel code segment
+	SEG(STA_W, 0, 0x7ff << 12)     # Kernel data segment
 
 # TODO: Please fillup the GDT register for gdt in order to used
 #       with "lgdt" instruction.
 # Note: You can reference lab3_reference page 13 for detail meaning
 #       of each bit of GDT register.
 gdtdesc: 
-	.word	0xffff # gdt limit
-	.word	gdt # gdt base
+	.word	gdtdesc - gdt - 1 # gdt limit
+	.long	gdt # gdt base

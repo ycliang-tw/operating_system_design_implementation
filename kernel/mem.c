@@ -147,6 +147,8 @@ mem_init(void)
 	// to initialize all fields of each struct PageInfo to 0.
 	// Your code goes here:
     /* TODO */
+	pages = (struct PageInfo*)boot_alloc(npages);
+	memset(pages, 0, npages*sizeof(struct PageInfo));
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -157,6 +159,7 @@ mem_init(void)
 	page_init();
 
 	check_page_free_list(1);
+	while(1);
 	check_page_alloc();
 	check_page();
 
@@ -184,6 +187,7 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
     /* TODO */
+	
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -260,10 +264,24 @@ page_init(void)
     /* TODO */
     size_t i;
 	for (i = 0; i < npages; i++) {
-
-        pages[i].pp_ref = 0;
-        pages[i].pp_link = page_free_list;
-        page_free_list = &pages[i];
+		if(i == 0){												// hint 1	
+			pages[i].pp_ref = 1;
+			pages[i].pp_link = NULL;
+		}else if(i < npages_basemem){							// hint 2
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}else if(i < (EXTPHYSMEM / PGSIZE)){					// hint 3
+			pages[i].pp_ref = 1;
+			pages[i].pp_link = NULL;
+		}else if(i < (((uint32_t)nextfree - KERNBASE)/PGSIZE)){	// hint 4, convert (uint23_t)nextfree from virtual address to physical address
+			pages[i].pp_ref = 1;
+			pages[i].pp_link = NULL;
+		}else{													// hint 4
+			pages[i].pp_ref = 0;
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
     }
 }
 
@@ -296,6 +314,10 @@ page_free(struct PageInfo *pp)
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
     /* TODO */
+	struct PageInfo *page2bfree = pp;
+	if(page2bfree->pp_link == NULL && page2bfree->pp_ref == 0){
+		//	
+	}
 }
 
 //

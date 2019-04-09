@@ -1,5 +1,5 @@
 # Makefile for the simple kernel.
-CC	=gcc
+CC	=/usr/bin/gcc
 AS	=as
 LD	=ld
 OBJCOPY = objcopy
@@ -28,3 +28,9 @@ clean:
 	rm $(OBJDIR)/boot/*.o $(OBJDIR)/boot/boot.out $(OBJDIR)/boot/boot $(OBJDIR)/boot/boot.asm
 	rm $(OBJDIR)/kernel/*.o $(OBJDIR)/kernel/system* kernel.*
 	rm $(OBJDIR)/lib/*.o
+
+run: all
+	qemu-system-i386 -hda kernel.img
+
+debug: all
+	qemu-system-i386 -hda kernel.img -s -S

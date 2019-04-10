@@ -5,11 +5,12 @@
 #include <inc/x86.h>
 #include <kernel/trap.h>
 #include <kernel/picirq.h>
+#include <kernel/mem.h>
 
 extern void init_video(void);
 void kernel_main(void)
 {
-    int *ptr;
+	int *ptr;
 	init_video();
 
 	pic_init();

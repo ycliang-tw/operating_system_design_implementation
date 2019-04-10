@@ -71,7 +71,7 @@ pic_init(void)
 void
 irq_setmask_8259A(uint16_t mask)
 {
-	int i;
+//	int i;
 	irq_mask_8259A = mask;
 	if (!didinit)
 		return;

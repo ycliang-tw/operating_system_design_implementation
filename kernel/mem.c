@@ -147,7 +147,7 @@ mem_init(void)
 	// to initialize all fields of each struct PageInfo to 0.
 	// Your code goes here:
     /* TODO */
-	pages = (struct PageInfo*)boot_alloc(npages);
+	pages = (struct PageInfo*)boot_alloc(npages*sizeof(struct PageInfo));
 	memset(pages, 0, npages*sizeof(struct PageInfo));
 
 	//////////////////////////////////////////////////////////////////////
@@ -159,10 +159,8 @@ mem_init(void)
 	page_init();
 
 	check_page_free_list(1);
-	while(1);
 	check_page_alloc();
 	check_page();
-
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
 
@@ -187,7 +185,7 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
     /* TODO */
-	
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);	
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -198,7 +196,7 @@ mem_init(void)
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
     /* TODO */
-
+	boot_map_region(kern_pgdir, KERNBASE, (1<<32)-KERNBASE, 0, PTE_W);
 	//////////////////////////////////////////////////////////////////////
 	// Map VA range [IOPHYSMEM, EXTPHYSMEM) to PA range [IOPHYSMEM, EXTPHYSMEM)
     boot_map_region(kern_pgdir, IOPHYSMEM, ROUNDUP((EXTPHYSMEM - IOPHYSMEM), PGSIZE), IOPHYSMEM, (PTE_W) | (PTE_P));
@@ -301,6 +299,16 @@ struct PageInfo *
 page_alloc(int alloc_flags)
 {
     /* TODO */
+	struct PageInfo* alloc_page = page_free_list;
+	if(page_free_list != NULL){
+		page_free_list = page_free_list->pp_link;
+		alloc_page->pp_link = NULL;
+		
+		if(alloc_flags & ALLOC_ZERO){
+			memset(page2kva(alloc_page), 0, PGSIZE);
+		}
+	}
+	return alloc_page;
 }
 
 //
@@ -314,10 +322,11 @@ page_free(struct PageInfo *pp)
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
     /* TODO */
-	struct PageInfo *page2bfree = pp;
-	if(page2bfree->pp_link == NULL && page2bfree->pp_ref == 0){
-		//	
-	}
+	struct PageInfo *page2BFreed = pp;
+	assert(page2BFreed->pp_ref == 0);
+	assert(page2BFreed->pp_link == NULL);
+	page2BFreed->pp_link = page_free_list;
+	page_free_list = page2BFreed;
 }
 
 //
@@ -358,6 +367,26 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
     /* TODO */
+	int pdindex = PDX(va), ptindex = PTX(va);
+	pde_t* pdentry = &pgdir[pdindex];
+	pte_t* ptentry = NULL;
+	struct PageInfo *alloc = NULL;
+
+	if((*pdentry) & PTE_P){
+		ptentry = KADDR(PTE_ADDR(*pdentry));
+	}else{
+		if(create != false &&
+		  (alloc = page_alloc(ALLOC_ZERO)) != NULL &&
+		  (ptentry = (pte_t*)KADDR(page2pa(alloc))) != NULL) {
+		
+			alloc->pp_ref++;
+			(*pdentry) = page2pa(alloc) | PTE_P | PTE_W | PTE_U;
+
+		}else{
+			return NULL;
+		}
+	}
+	return &ptentry[ptindex];
 }
 
 //
@@ -375,6 +404,12 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
     /* TODO */
+	int i = 0;
+	for(; i < size/PGSIZE; i++, va += PGSIZE, pa += PGSIZE){
+		pte_t *ptentry = pgdir_walk(pgdir, va, 1);
+		assert(ptentry != NULL);
+		*ptentry = pa | perm | PTE_P;
+	}
 }
 
 //
@@ -406,6 +441,23 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
     /* TODO */
+	int success = 0;
+	pte_t *ptentry = pgdir_walk(pgdir, va, 1);
+
+	if(ptentry == NULL){
+		return -E_NO_MEM;
+	}else if(*ptentry & PTE_P){
+		if (PTE_ADDR(*ptentry) != page2pa(pp)){
+			page_remove(pgdir, va);
+		}else{
+			*ptentry = page2pa(pp) | PTE_P | perm;
+			return success;
+		}
+	}
+	pp->pp_ref++;
+	tlb_invalidate(pgdir, va);
+	*ptentry = page2pa(pp) | PTE_P | perm;	
+	return success;
 }
 
 //
@@ -423,6 +475,14 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
     /* TODO */
+	int dontCreate = 0;
+	pte_t *ptentry = pgdir_walk(pgdir, va, dontCreate);
+	if(ptentry == NULL || !(*ptentry & PTE_P)){
+		return NULL;
+	}else if(*pte_store){
+		*pte_store = ptentry;
+	}
+	return pa2page(PTE_ADDR(*ptentry));
 }
 
 //
@@ -444,8 +504,14 @@ void
 page_remove(pde_t *pgdir, void *va)
 {
     /* TODO */
+	pte_t *pte_store;
+	struct PageInfo *rmpage = page_lookup(pgdir, va, &pte_store);
+	if(rmpage != NULL){
+		page_decref(rmpage);
+		*pte_store = 0;
+		tlb_invalidate(pgdir, va);
+	}
 }
-
 //
 // Invalidate a TLB entry, but only if the page tables being
 // edited are the ones currently in use by the processor.
@@ -685,7 +751,7 @@ check_page(void)
 	pte_t *ptep, *ptep1;
 	void *va;
 	int i;
-	extern pde_t entry_pgdir[];
+//	extern pde_t entry_pgdir[];
 
 	// should be able to allocate three pages
 	pp0 = pp1 = pp2 = 0;
@@ -833,11 +899,11 @@ check_page(void)
 static void
 check_page_installed_pgdir(void)
 {
-	struct PageInfo *pp, *pp0, *pp1, *pp2;
-	struct PageInfo *fl;
-	pte_t *ptep, *ptep1;
-	uintptr_t va;
-	int i;
+	struct PageInfo /* *pp, */ *pp0, *pp1, *pp2;
+//	struct PageInfo *fl;
+//	pte_t *ptep, *ptep1;
+//	uintptr_t va;
+//	int i;
 
 	// check that we can read and write installed pages
 	pp1 = pp2 = 0;

@@ -143,7 +143,7 @@ void puts(unsigned char *text)
 {
     int i;
 
-    for (i = 0; i < strlen(text); i++)
+    for (i = 0; i < strlen((char*)text); i++)
     {
         putch(text[i]);
     }

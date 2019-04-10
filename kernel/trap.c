@@ -1,6 +1,7 @@
 #include <kernel/trap.h>
 #include <inc/mmu.h>
 #include <inc/x86.h>
+#include <inc/stdio.h>
 
 /* For debugging, so print_trapframe can distinguish between printing
  * a saved trapframe and printing the current trapframe and print some
@@ -25,7 +26,7 @@ struct Pseudodesc idt_desc = {
 
 extern void irq_kbd();
 extern void irq_timer();
-
+extern void trap_page_fault();
 
 /* For debugging */
 static const char *trapname(int trapno)
@@ -134,6 +135,9 @@ trap_dispatch(struct Trapframe *tf)
 		case IRQ_OFFSET + IRQ_TIMER:
 			timer_handler();
 			break;
+		case T_PGFLT:
+			page_fault_handler(tf);
+			break;
 	// Unexpected trap: The user process or the kernel has a bug.
 		default:
 			print_trapframe(tf);
@@ -182,6 +186,15 @@ void trap_init()
 	SETGATE(idt[IRQ_OFFSET + IRQ_KBD], 0, GD_KT, irq_kbd, 0);
 	/* Timer Trap setup */
 	SETGATE(idt[IRQ_OFFSET + IRQ_TIMER], 0, GD_KT, irq_timer, 0);
+	/* Page fault setup */
+	SETGATE(idt[T_PGFLT], 1, GD_KT, trap_page_fault, 0)
  	/* Load IDT */
 	lidt(&idt_desc);
+}
+
+void page_fault_handler(struct Trapframe* tf)
+{
+	uint32_t pfaddr = rcr2();
+	cprintf("[0656133] Page fault @ %p\n", pfaddr);
+	while(1);
 }

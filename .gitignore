@@ -1,2 +1,5 @@
 cscope*
 tags
+*.o
+*.asm
+kernel/system

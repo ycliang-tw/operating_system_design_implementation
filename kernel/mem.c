@@ -196,7 +196,7 @@ mem_init(void)
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
     /* TODO */
-	boot_map_region(kern_pgdir, KERNBASE, (1<<32)-KERNBASE, 0, PTE_W);
+	boot_map_region(kern_pgdir, KERNBASE, ~KERNBASE, 0, PTE_W);
 	//////////////////////////////////////////////////////////////////////
 	// Map VA range [IOPHYSMEM, EXTPHYSMEM) to PA range [IOPHYSMEM, EXTPHYSMEM)
     boot_map_region(kern_pgdir, IOPHYSMEM, ROUNDUP((EXTPHYSMEM - IOPHYSMEM), PGSIZE), IOPHYSMEM, (PTE_W) | (PTE_P));
@@ -272,7 +272,7 @@ page_init(void)
 		}else if(i < (EXTPHYSMEM / PGSIZE)){					// hint 3
 			pages[i].pp_ref = 1;
 			pages[i].pp_link = NULL;
-		}else if(i < (((uint32_t)nextfree - KERNBASE)/PGSIZE)){	// hint 4, convert (uint23_t)nextfree from virtual address to physical address
+		}else if(i < (((uint32_t)boot_alloc(0) - KERNBASE)/PGSIZE)){	// hint 4, convert (uint23_t)nextfree from virtual address to physical address
 			pages[i].pp_ref = 1;
 			pages[i].pp_link = NULL;
 		}else{													// hint 4
@@ -451,6 +451,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 			page_remove(pgdir, va);
 		}else{
 			*ptentry = page2pa(pp) | PTE_P | perm;
+			tlb_invalidate(pgdir, va);
 			return success;
 		}
 	}

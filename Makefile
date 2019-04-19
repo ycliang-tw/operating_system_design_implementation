@@ -1,5 +1,5 @@
 # Makefile for the simple kernel.
-CC	=gcc
+CC	=/usr/bin/gcc
 AS	=as
 LD	=ld
 OBJCOPY = objcopy

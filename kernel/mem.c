@@ -47,6 +47,7 @@ i386_detect_memory(void)
   else
     npages = npages_basemem;
 
+	num_free_pages = npages;
   printk("Physical memory: %uK available, base = %uK, extended = %uK\n",
       npages * PGSIZE / 1024,
       npages_basemem * PGSIZE / 1024,
@@ -308,6 +309,7 @@ page_alloc(int alloc_flags)
 		if(alloc_flags & ALLOC_ZERO){
 			memset(page2kva(alloc_page), 0, PGSIZE);
 		}
+		num_free_pages--;
 	}
 	return alloc_page;
 }
@@ -328,6 +330,7 @@ page_free(struct PageInfo *pp)
 	assert(page2BFreed->pp_link == NULL);
 	page2BFreed->pp_link = page_free_list;
 	page_free_list = page2BFreed;
+	num_free_pages++;
 }
 
 //
@@ -564,6 +567,17 @@ setupvm(pde_t *pgdir, uint32_t start, uint32_t size)
 pde_t *
 setupkvm()
 {
+
+	struct PageInfo *pp = page_alloc(ALLOC_ZERO);
+    pde_t *pgdir = NULL;
+    if(pp){
+        pgdir = page2kva(pp);
+        boot_map_region(pgdir, UPAGES, ROUNDUP((sizeof(struct PageInfo) * npages), PGSIZE), PADDR(pages), PTE_U);
+        boot_map_region(pgdir, KSTACKTOP - KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
+        boot_map_region(pgdir, KERNBASE, -KERNBASE, 0, PTE_W);
+        boot_map_region(pgdir, IOPHYSMEM, ROUNDUP((EXTPHYSMEM - IOPHYSMEM), PGSIZE), IOPHYSMEM, PTE_W);
+    }
+    return pgdir;	
 }
 
 

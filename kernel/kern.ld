@@ -49,7 +49,7 @@ SECTIONS
 
 		/* Include debugging information in kernel memory */
 /*		shift_addr = (. - kernel_load_addr) + 0x100000; */
-		.stab /* : AT(shift_addr)*/ {
+		.stab : /*AT(shift_addr)*/ {
 		  PROVIDE(__STAB_BEGIN__ = .);
 		  *(.stab);
 		  PROVIDE(__STAB_END__ = .);

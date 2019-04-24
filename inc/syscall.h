@@ -8,7 +8,7 @@ enum {
 	SYS_getc,
 	SYS_getpid,
 	SYS_fork,
-	SYS_kill,
+	SYS_kill_self,
 	SYS_sleep,
   SYS_get_num_used_page,
   SYS_get_num_free_page,

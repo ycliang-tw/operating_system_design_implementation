@@ -34,13 +34,6 @@
 
 .text
 
-<<<<<<< HEAD
-/* TODO: Interface declaration for ISRs
- * Note: Use TRAPHANDLER_NOEC macro define other isr entry
- *       The Trap number are declared in inc/trap.h which might come in handy
- *       when declaring interface for ISRs.
- */
-=======
 /* ISRs */
 TRAPHANDLER_NOEC(Default_ISR, T_DEFAULT)
 TRAPHANDLER_NOEC(KBD_Input, IRQ_OFFSET+IRQ_KBD)
@@ -49,10 +42,11 @@ TRAPHANDLER_NOEC(TIM_ISR, IRQ_OFFSET+IRQ_TIMER)
 // TODO: Lab 5
 // Please add interface of system call
 
+TRAPHANDLER_NOEC(syscall_entry, T_SYSCALL)
+
 TRAPHANDLER(GPFLT, T_GPFLT)
 TRAPHANDLER(STACK_ISR, T_STACK)
 TRAPHANDLER(PGFLT, T_PGFLT)
->>>>>>> d545ae5a7294ae0acc2faa3ccae2e0913dadadeb
 
 TRAPHANDLER_NOEC(irq_kbd, IRQ_OFFSET + IRQ_KBD)
 TRAPHANDLER_NOEC(irq_timer, IRQ_OFFSET + IRQ_TIMER)
@@ -65,20 +59,6 @@ _alltraps:
 	 * You can reference the http://www.osdever.net/bkerndev/Docs/isrs.htm
 	 * After stack parpared, just "call default_trap_handler".
 	 */
-<<<<<<< HEAD
-	
-	pushl %ds
-	pushl %es
-	pushal	
-
-	pushl %esp # Pass a pointer which points to the Trapframe as an argument to default_trap_handler()
-	call default_trap_handler
-	popl %esp
-
-	popal
-	popl %es
-	popl %ds
-=======
 	pushl %ds
 	pushl %es
 	pushal # Push all general register into stack, it maps to Trapframe.tf_regs
@@ -100,7 +80,6 @@ _alltraps:
 	mov %ax, %gs
 	pop %ax 
 	add $4, %esp
->>>>>>> d545ae5a7294ae0acc2faa3ccae2e0913dadadeb
 
 # Return falls through to trapret...
 .globl trapret

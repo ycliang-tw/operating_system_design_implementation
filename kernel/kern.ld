@@ -24,7 +24,8 @@ SECTIONS
 		  lib/syscall.o (.text)
 		  user/shell.o (.text)
 		  user/main.o (.text)
-		  /usr/lib/gcc/i686-redhat-linux/4.5.1/libgcc.a (.*)
+		  /usr/lib/gcc/i686-redhat-linux/4.5.1/libgcc.a (.*) 
+/*		  /usr/lib/gcc/x86_64-linux-gnu/7.3.0/32/libgcc.a (.*)*/
 		  PROVIDE(UTEXT_end = .);
 		  *(.text .stub .text.* .gnu.linkonce.t.*)
 		}
@@ -47,7 +48,8 @@ SECTIONS
 		PROVIDE(rdata_end = .);
 
 		/* Include debugging information in kernel memory */
-		.stab : {
+/*		shift_addr = (. - kernel_load_addr) + 0x100000; */
+		.stab /* : AT(shift_addr)*/ {
 		  PROVIDE(__STAB_BEGIN__ = .);
 		  *(.stab);
 		  PROVIDE(__STAB_END__ = .);

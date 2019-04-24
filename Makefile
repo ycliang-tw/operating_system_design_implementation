@@ -6,13 +6,14 @@ OBJCOPY = objcopy
 OBJDUMP = objdump
 NM = nm
 
-CFLAGS = -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin
+CFLAGS = -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin # -fno-stack-protector
 
 # Add debug symbol
 CFLAGS += -g
 
 CFLAGS += -I.
 
+# LDFLAGS = -m elf_i386
 
 OBJDIR = .
 
@@ -36,4 +37,8 @@ qemu:
 	qemu-system-i386 -hda kernel.img -monitor stdio
 
 debug:
-	qemu-system-i386 -hda kernel.img -monitor stdio -s -S
+	qemu-system-i386 -hda kernel.img -curses  -s -S
+
+run:
+	qemu-system-i386 -hda kernel.img -curses
+

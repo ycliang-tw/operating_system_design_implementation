@@ -1,6 +1,7 @@
 #include <kernel/task.h>
 #include <kernel/timer.h>
 #include <kernel/mem.h>
+#include <kernel/cpu.h>
 #include <kernel/syscall.h>
 #include <kernel/trap.h>
 #include <inc/stdio.h>

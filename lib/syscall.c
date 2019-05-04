@@ -36,6 +36,10 @@ syscall(int num, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5
 	return ret;
 }
 
+
+SYSCALL_NOARG(getc, int)
+SYSCALL_NOARG(getcid, int32_t)
+
 void
 puts(const char *s, size_t len)
 {

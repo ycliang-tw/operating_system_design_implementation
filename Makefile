@@ -6,7 +6,7 @@ OBJCOPY = objcopy
 OBJDUMP = objdump
 NM = nm
 
-CFLAGS = -m32 -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin # -fno-stack-protector
+CFLAGS = -m32 -Wall -O -fstrength-reduce -finline-functions -nostdinc -fno-builtin 
 
 # Add debug symbol
 CFLAGS += -g
@@ -17,6 +17,7 @@ CFLAGS += -I.
 
 OBJDIR = .
 
+CPUS ?= 1
 
 include boot/Makefile
 include kernel/Makefile
@@ -37,8 +38,7 @@ qemu: all
 	qemu-system-i386 -hda kernel.img -monitor stdio
 
 debug: all
-	qemu-system-i386 -hda kernel.img -curses  -s -S
+	qemu-system-i386 -hda kernel.img -curses  -s -S -smp $(CPUS)
 
 run: all
-	qemu-system-i386 -hda kernel.img -curses
-
+	qemu-system-i386 -hda kernel.img -curses -smp $(CPUS)

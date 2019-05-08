@@ -5,6 +5,7 @@
 #include <inc/mmu.h>
 #include <inc/x86.h>
 #include <inc/stdio.h>
+#include <kernel/cpu.h>
 
 /* For debugging, so print_trapframe can distinguish between printing
  * a saved trapframe and printing the current trapframe and print some
@@ -167,8 +168,8 @@ trap_dispatch(struct Trapframe *tf)
 			// Copy trap frame (which is currently on the stack)
 			// into 'cur_task->tf', so that running the environment
 			// will restart at the trap point.
-			cur_task->tf = *tf;
-			tf = &(cur_task->tf);
+			thiscpu->cpu_task->tf = *tf;
+			tf = &(thiscpu->cpu_task->tf);
 				
 		}
 		// Do ISR

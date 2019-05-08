@@ -41,7 +41,9 @@ typedef struct
 //
 typedef struct
 {
-
+	int lists[NR_TASKS];
+	int cur_idx;
+	int size;
 } Runqueue;
 
 

@@ -43,7 +43,7 @@
 void sched_yield(void)
 {
 	extern Task tasks[];
-	int nextID = (thiscpu->cpu_task != NULL)? thiscpu->cpu_rq.cur_idx + 1 : 0;
+	int nextID = (thiscpu->cpu_task != NULL)? thiscpu->cpu_rq.cur_idx : 0;
 	int i;
 	for(i = 0; i < thiscpu->cpu_rq.size; i++ ){
 		nextID = (nextID + 1) % thiscpu->cpu_rq.size;

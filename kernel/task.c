@@ -229,13 +229,14 @@ int sys_fork()
   /* pid for newly created process */
   int pid = task_create();
   if(pid == -1)	return -1;
-	if ((uint32_t)cur_task)
+
+	if ((uint32_t)thiscpu->cpu_task)
 	{
-		tasks[pid].tf = cur_task->tf;
+		tasks[pid].tf = thiscpu->cpu_task->tf;
 		int i = USTACKTOP;
 		for(; i > USTACKTOP - USR_STACK_SIZE; i -= PGSIZE){
 			pte_t *des = pgdir_walk(tasks[pid].pgdir, i - PGSIZE, 0);
-			pte_t *src = pgdir_walk(cur_task->pgdir, i - PGSIZE, 0);
+			pte_t *src = pgdir_walk(thiscpu->cpu_task->pgdir, i - PGSIZE, 0);
 			memcpy(KADDR(PTE_ADDR(*des)), KADDR(PTE_ADDR(*src)), PGSIZE);
 		}
 		/* Step 4: All user program use the same code for now */
@@ -246,6 +247,16 @@ int sys_fork()
 
         tasks[pid].tf.tf_regs.reg_eax = 0;
 	}
+
+	int min = cpus[0].cpu_rq.size, cid = 0, idx = 1;
+	for(; idx < ncpu; idx++){
+		if(cpus[idx].cpu_rq.size < min){
+			min = cpus[idx].cpu_rq.size;
+			cid = idx;
+		}
+	}
+	cpus[cid].cpu_rq.lists[ cpus[cid].cpu_rq.size++ ] = pid;
+
 	return pid;
 }
 

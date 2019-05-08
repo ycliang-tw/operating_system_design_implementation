@@ -32,7 +32,6 @@ int32_t do_getc()
 int32_t do_syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
 {
 	int32_t retVal = -1;
-	extern Task *cur_task;
 
 	switch (syscallno)
 	{
@@ -55,6 +54,9 @@ int32_t do_syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, ui
 			/* TODO: Lab 5
 			* Get current task's pid */
 			retVal = thiscpu->cpu_task->task_id;
+			break;
+		case SYS_getcid:
+			retVal = thiscpu->cpu_id;
 			break;
 
 		case SYS_sleep:

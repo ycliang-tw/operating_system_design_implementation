@@ -185,7 +185,7 @@ void sys_kill(int pid)
 		int i = 0;
 		for(; i < thiscpu->cpu_rq.size; i++){
 			if(thiscpu->cpu_rq.lists[i] == pid){
-				memmove( &(thiscpu->cpu_rq.lists[i]), &(thiscpu->cpu_rq.lists[i+1]), (thiscpu->cpu_rq.size - i)*sizeof(int));
+				memmove( &(thiscpu->cpu_rq.lists[i]), &(thiscpu->cpu_rq.lists[i+1]), (thiscpu->cpu_rq.size - i -1)*sizeof(int));
 				thiscpu->cpu_rq.size--;
 				break;
 			}

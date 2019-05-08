@@ -34,11 +34,11 @@ clean:
 	rm -rf $(OBJDIR)/user/*.o
 	rm -rf $(OBJDIR)/user/*.asm
 
-qemu: all
+qemu: clean all
 	qemu-system-i386 -hda kernel.img -monitor stdio
 
-debug: all
+debug: clean all
 	qemu-system-i386 -hda kernel.img -curses  -s -S -smp $(CPUS)
 
-run: all
+run: clean all
 	qemu-system-i386 -hda kernel.img -curses -smp $(CPUS)

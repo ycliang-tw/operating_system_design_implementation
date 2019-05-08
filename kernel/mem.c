@@ -255,7 +255,10 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	// TODO:
 	// Lab6: Your code here:
-
+	int idx = 0, kstktop = KSTACKTOP;
+	for(; idx < NCPU; idx++, kstktop -= (KSTKSIZE+KSTKGAP)){
+		boot_map_region(kern_pgdir, (kstktop - KSTKSIZE), KSTKSIZE, PADDR(percpu_kstacks[idx]), PTE_W | PTE_P);
+	}
 }
 
 // --------------------------------------------------------------

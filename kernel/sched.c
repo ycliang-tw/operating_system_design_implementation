@@ -43,7 +43,7 @@
 void sched_yield(void)
 {
 	extern Task tasks[];
-	int nextID = (thiscpu->cpu_task != NULL)? thiscpu->cpu_rq.cur_id + 1 : 0;
+	int nextID = (thiscpu->cpu_task != NULL)? thiscpu->cpu_rq.cur_idx + 1 : 0;
 	int i;
 	for(i = 0; i < thiscpu->cpu_rq.size; i++ ){
 		nextID = (nextID + 1) % thiscpu->cpu_rq.size;
@@ -52,10 +52,10 @@ void sched_yield(void)
 		if(tasks[pid].state == TASK_RUNNABLE){
 			thiscpu->cpu_task = &(tasks[pid]);
 			thiscpu->cpu_task->state = TASK_RUNNING;
-			thiscpu->cpu_task->remind_tick = TIME_QUANT;
-			thiscpu->cpu_rq.cur_id = nextID;
-			lcr3(PADDR(cur_task->pgdir));
-			ctx_switch(cur_task);
+			thiscpu->cpu_task->remind_ticks = TIME_QUANT;
+			thiscpu->cpu_rq.cur_idx = nextID;
+			lcr3(PADDR(thiscpu->cpu_task->pgdir));
+			ctx_switch(thiscpu->cpu_task);
 		}
 	}
 }

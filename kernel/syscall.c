@@ -54,15 +54,15 @@ int32_t do_syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, ui
 		case SYS_getpid:
 			/* TODO: Lab 5
 			* Get current task's pid */
-			retVal = cur_task->task_id;
+			retVal = thiscpu->cpu_task->task_id;
 			break;
 
 		case SYS_sleep:
 			/* TODO: Lab 5
 			* Yield this task
 			* You can reference kernel/sched.c for yielding the task */
-			cur_task->remind_ticks = a1;
-			cur_task->state = TASK_SLEEP;
+			thiscpu->cpu_task->remind_ticks = a1;
+			thiscpu->cpu_task->state = TASK_SLEEP;
 			sched_yield();
 			break;
 
@@ -70,7 +70,7 @@ int32_t do_syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, ui
 			/* TODO: Lab 5
 			* Kill specific task
 			* You can reference kernel/task.c, kernel/task.h*/
-			sys_kill(cur_task->task_id);
+			sys_kill(thiscpu->cpu_task->task_id);
 			break;
 
 		case SYS_get_num_free_page:

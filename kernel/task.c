@@ -134,7 +134,7 @@ int task_create()
 
 	/* Setup task structure (task_id and parent_id) */
 	ts->task_id = id;
-	ts->parent_id = cur_task? cur_task->task_id : 0;
+	ts->parent_id = (thiscpu->cpu_task != NULL)? thiscpu->cpu_task->task_id : 0;
 	ts->remind_ticks = TIME_QUANT;
 	ts->state = TASK_RUNNABLE;
 
@@ -185,7 +185,7 @@ void sys_kill(int pid)
 		int i = 0;
 		for(; i < thiscpu->cpu_rq.size; i++){
 			if(thiscpu->cpu_rq.lists[i] == pid){
-				memmove( &(thiscpu->cpu_rq.lists[i]), &(thiscpu->cp_rq.lists[i+1]), (thiscpu->cpu_rq.size - i)*sizeof(int));
+				memmove( &(thiscpu->cpu_rq.lists[i]), &(thiscpu->cpu_rq.lists[i+1]), (thiscpu->cpu_rq.size - i)*sizeof(int));
 				thiscpu->cpu_rq.size--;
 				break;
 			}

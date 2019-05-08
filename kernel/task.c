@@ -6,7 +6,7 @@
 #include <kernel/task.h>
 #include <kernel/mem.h>
 #include <kernel/cpu.h>
-
+#include <kernel/spinlock.h>
 // Global descriptor table.
 //
 // Set up global descriptor table (GDT) with separate segments for
@@ -66,8 +66,7 @@ uint32_t UDATA_SZ;
 uint32_t UBSS_SZ;
 uint32_t URODATA_SZ;
 
-Task *cur_task = NULL; //Current running task
-
+struct spinlock lock_tasks;
 extern void sched_yield(void);
 
 
@@ -98,7 +97,8 @@ extern void sched_yield(void);
  */
 int task_create()
 {
-	/* Find a free task structure */
+	/* Find a free task striucture */
+	spin_lock(&lock_tasks);
 	Task *ts = NULL;
 	int i = 0, id = 0;
 	for(; i < NR_TASKS; i++){
@@ -109,7 +109,10 @@ int task_create()
 		}
 	}
 	
-	if(i >= NR_TASKS)	return -1;
+	if(i >= NR_TASKS){
+		spin_unlock(&lock_tasks);
+		return -1;
+	}
 
   /* Setup Page Directory and pages for kernel*/
   if (!(ts->pgdir = setupkvm()))
@@ -137,7 +140,7 @@ int task_create()
 	ts->parent_id = (thiscpu->cpu_task != NULL)? thiscpu->cpu_task->task_id : 0;
 	ts->remind_ticks = TIME_QUANT;
 	ts->state = TASK_RUNNABLE;
-
+	spin_unlock(&lock_tasks);
 	return id;
 }
 
@@ -170,6 +173,7 @@ static void task_free(int pid)
 	}
 	ptable_remove(tasks[pid].pgdir);
 	pgdir_remove(tasks[pid].pgdir);
+
 }
 
 // Lab6 TODO
@@ -195,7 +199,9 @@ void sys_kill(int pid)
    * Free the memory
    * and invoke the scheduler for yield
    */
+		spin_lock(&lock_tasks);
 		tasks[pid].state = TASK_FREE;
+		spin_unlock(&lock_tasks);
 		task_free(pid);
 		if(thiscpu->cpu_task->task_id == pid){
 			thiscpu->cpu_task = NULL;
@@ -278,6 +284,7 @@ int sys_fork()
 void task_init()
 {
   extern int user_entry();
+  spin_initlock(&lock_tasks);
 	int i;
   UTEXT_SZ = (uint32_t)(UTEXT_end - UTEXT_start);
   UDATA_SZ = (uint32_t)(UDATA_end - UDATA_start);

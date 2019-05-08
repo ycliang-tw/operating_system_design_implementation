@@ -9,6 +9,7 @@
 #include <kernel/mem.h>
 #include <kernel/kclock.h>
 #include <kernel/cpu.h>
+#include <kernel/spinlock.h>
 
 // These variables are set by i386_detect_memory()
 size_t                   npages;			// Amount of physical memory (in pages)
@@ -21,6 +22,7 @@ struct PageInfo          *pages;		// Physical page state array
 static struct PageInfo   *page_free_list;	// Free list of physical pages
 size_t                   num_free_pages;
 
+struct spinlock lock_pages;
 // --------------------------------------------------------------
 // Detect machine's physical memory setup.
 // --------------------------------------------------------------
@@ -122,6 +124,7 @@ boot_alloc(uint32_t n)
 void
 mem_init(void)
 {
+	spin_initlock(&lock_pages);
 	uint32_t cr0;
     nextfree = 0;
     page_free_list = 0;
@@ -344,6 +347,7 @@ page_alloc(int alloc_flags)
 {
     /* TODO */
 	struct PageInfo* alloc_page = page_free_list;
+	spin_lock(&lock_pages);
 	if(page_free_list != NULL){
 		page_free_list = page_free_list->pp_link;
 		alloc_page->pp_link = NULL;
@@ -353,6 +357,7 @@ page_alloc(int alloc_flags)
 		}
 		num_free_pages--;
 	}
+	spin_unlock(&lock_pages);
 	return alloc_page;
 }
 
@@ -370,9 +375,12 @@ page_free(struct PageInfo *pp)
 	struct PageInfo *page2BFreed = pp;
 	assert(page2BFreed->pp_ref == 0);
 	assert(page2BFreed->pp_link == NULL);
+
+	spin_lock(&lock_pages);
 	page2BFreed->pp_link = page_free_list;
 	page_free_list = page2BFreed;
 	num_free_pages++;
+	spin_unlock(&lock_pages);
 }
 
 //

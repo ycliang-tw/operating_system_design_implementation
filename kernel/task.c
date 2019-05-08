@@ -180,8 +180,16 @@ static void task_free(int pid)
 //
 void sys_kill(int pid)
 {
-	if (pid > 0 && pid < NR_TASKS)
+	if (pid > 0 && pid < NR_TASKS && thiscpu->cpu_rq.size > 0)
 	{
+		int i = 0;
+		for(; i < thiscpu->cpu_rq.size; i++){
+			if(thiscpu->cpu_rq.lists[i] == pid){
+				memmove( &(thiscpu->cpu_rq.lists[i]), &(thiscpu->cp_rq.lists[i+1]), (thiscpu->cpu_rq.size - i)*sizeof(int));
+				thiscpu->cpu_rq.size--;
+				break;
+			}
+		}
 	/* TODO: Lab 5
    * Remember to change the state of tasks
    * Free the memory
@@ -189,7 +197,10 @@ void sys_kill(int pid)
    */
 		tasks[pid].state = TASK_FREE;
 		task_free(pid);
-		sched_yield();
+		if(thiscpu->cpu_task->task_id == pid){
+			thiscpu->cpu_task = NULL;
+			sched_yield();
+		}
 	}
 }
 

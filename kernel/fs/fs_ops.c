@@ -119,6 +119,26 @@ int fat_unlink(struct fs_fd* file, const char *pathname)
 	return -f_unlink(pathname);
 }
 
+
+
+int fat_opendir(DIR *dir, const char *pathname)
+{
+	return -f_opendir(dir, pathname);
+}
+int fat_readdir(DIR *dir, FILINFO *finfo)
+{
+	return -f_readdir(dir, finfo);
+}
+int fat_closedir(DIR *dir)
+{
+	return -f_closedir(dir);
+}
+int fat_stat(const TCHAR *path, FILINFO *finfo)
+{
+	return -f_stat(path, finfo);
+}
+
+
 struct fs_ops elmfat_ops = {
     .dev_name = "elmfat",
     .mount = fat_mount,
@@ -128,7 +148,11 @@ struct fs_ops elmfat_ops = {
     .read = fat_read,
     .write = fat_write,
     .lseek = fat_lseek,
-    .unlink = fat_unlink
+    .unlink = fat_unlink,
+	.opendir = fat_opendir,
+	.readdir = fat_readdir,
+	.closedir = fat_closedir,
+	.stat = fat_stat
 };
 
 

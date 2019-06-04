@@ -27,7 +27,9 @@ int filetest3(int argc, char **argv);
 int filetest4(int argc, char **argv);
 int filetest5(int argc, char **argv);
 int spinlocktest(int argc, char **argv);
-
+int listfile(int argc, char **argv);
+int removefile(int argc, char **argv);
+int touch(int argc, char **argv);
 
 struct Command commands[] = {
   { "help", "Display this list of commands", mon_help },
@@ -42,7 +44,10 @@ struct Command commands[] = {
   { "filetest3", "Laqrge block test", filetest3},
   { "filetest4", "Error test", filetest4},
   { "filetest5", "unlink test", filetest5},
-  { "spinlocktest", "Test spinlock", spinlocktest }
+  { "spinlocktest", "Test spinlock", spinlocktest },
+  { "ls", "List files", listfile },
+  { "rm", "Remove files", removefile},
+  { "touch", "Create files", touch}
 };
 const int NCOMMANDS = (sizeof(commands)/sizeof(commands[0]));
 
@@ -82,6 +87,44 @@ int chgcolor(int argc, char **argv)
     cprintf("No input text color!\n");
   }
   return 0;
+}
+
+int listfile(int argc, char **argv)
+{
+	if(argc <= 1){
+		cprintf("File or path does not exist!\n");
+	}
+	return 0;
+}
+
+int removefile(int argc, char **argv)
+{
+	if(argc <= 1){
+		cprintf("missing argument!\n");
+	}
+	int ret = unlink(argv[1]);
+	if(ret < 0){
+		cprintf("cannot remove %s!\n", argv[1]);
+	}
+	return 0;
+}
+
+int touch(int argc, char **argv)
+{
+	if(argc <= 1){
+		cprintf("missing argument!\n");
+		return 0;
+	}
+	
+	int fd = open(argv[1], O_RDWR | O_CREAT, 0);
+
+	if(fd < 0){
+		cprintf("fd < 0: cannot create %s!\n", argv[1]);
+		return 0;
+	}
+
+	close(fd);
+	return 0;
 }
 
 #define WHITESPACE "\t\r\n "

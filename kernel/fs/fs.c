@@ -207,6 +207,33 @@ int file_unlink(const char *path)
 }
 
 
+
+
+int file_opendir(DIR *dir, const char *pathname)
+{
+	return convert_retval(fat_fs.ops->opendir(dir, pathname));
+}
+
+int file_readdir(DIR *dir, FILINFO *finfo)
+{
+	return convert_retval(fat_fs.ops->readdir(dir, finfo));
+}
+
+int file_closedir(DIR *dir)
+{
+	return convert_retval(fat_fs.ops->closedir(dir));
+}
+
+int file_stat(const TCHAR *path, FILINFO *finfo)
+{
+	return convert_retval(fat_fs.ops->stat(path, finfo));
+}
+
+
+
+
+
+
 /**
  * @ingroup Fd
  * This function will allocate a file descriptor.

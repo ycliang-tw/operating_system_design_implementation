@@ -108,6 +108,7 @@ struct IDEChannelRegisters {
 
 int disk_init();
 void disk_test();
+unsigned char get_ide_status();
 int ide_read_sectors(unsigned char drive, unsigned char numsects, unsigned int lba,
 		unsigned int edi);
 int ide_write_sectors(unsigned char drive, unsigned char numsects, unsigned int lba,

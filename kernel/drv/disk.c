@@ -25,6 +25,13 @@ unsigned char ide_ata_access(unsigned char direction, unsigned char drive, unsig
 		unsigned char numsects, unsigned short selector, unsigned int edi);
 
 
+unsigned char get_ide_status()
+{
+	return ide_status;
+}
+
+
+
 int disk_init()
 {
 	static unsigned char init = FALSE;

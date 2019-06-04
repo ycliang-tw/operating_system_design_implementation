@@ -86,6 +86,61 @@ int fs_init()
        
 }
 
+
+// convert to POSIX standard
+int convert_retval(int r)
+{
+    int retval = -1;
+    switch(-r)
+    {
+        case FR_OK:
+            retval = STATUS_OK;
+            break;
+        case FR_DISK_ERR:
+        case FR_NOT_READY:
+            retval = STATUS_EIO;
+            break;
+        case FR_INT_ERR:
+        case FR_INVALID_DRIVE:
+            retval = STATUS_EBADF;
+            break;
+        case FR_NO_FILE:
+        case FR_NO_PATH:
+        case FR_INVALID_NAME:
+            retval = STATUS_ENOENT;
+            break;
+        case FR_DENIED:
+        case FR_EXIST:
+            retval = STATUS_EEXIST;
+            break;
+        case FR_INVALID_OBJECT:
+            retval = STATUS_ENXIO;
+            break;
+        case FR_WRITE_PROTECTED:
+            retval = STATUS_EROFS;
+            break;
+        case FR_NOT_ENABLED:
+            retval = STATUS_ENOSPC;
+            break;
+        case FR_NO_FILESYSTEM:
+            retval = STATUS_ENODEV;
+            break;
+        case FR_MKFS_ABORTED:
+        case FR_INVALID_PARAMETER:
+            retval = STATUS_EINVAL;
+            break;
+        case FR_TIMEOUT:
+        case FR_LOCKED:
+        case FR_NOT_ENOUGH_CORE:
+        case FR_TOO_MANY_OPEN_FILES:
+            retval = STATUS_EBUSY;
+            break;
+    }
+    return -retval;
+}
+
+
+
 /** Mount a file system by path 
 *  Note: You need compare the device_name with fat_fs.ops->dev_name and find the file system operator
 *        then call ops->mount().
@@ -94,35 +149,61 @@ int fs_init()
 */
 int fs_mount(const char* device_name, const char* path, const void* data)
 {
+	if(strcmp(fat_fs.ops->dev_name, device_name) == 0){
+		strcpy(fat_fs.path, path);
+		return convert_retval( fat_fs.ops->mount(&fat_fs, data) );
+	}
     return -STATUS_EIO;
 } 
 
 /* Note: Before call ops->open() you may copy the path and flags parameters into fd object structure */
 int file_open(struct fs_fd* fd, const char *path, int flags)
 {
-
+	strcpy( fd->path, path );
+	fd->flags = flags;
+	return convert_retval( fat_fs.ops->open(fd) );
 }
 
 int file_read(struct fs_fd* fd, void *buf, size_t len)
 {
-
+	int ret = fat_fs.ops->read(fd, buf, len);
+	if(ret < 0){
+		ret = convert_retval(ret);
+	}
+	return ret;
 }
 
 int file_write(struct fs_fd* fd, const void *buf, size_t len)
 {
+	int ret = fat_fs.ops->write(fd, buf, len);
+	if(ret < 0){
+		ret = convert_retval(ret);
+	}
+	return ret;
 
 }
 
 int file_close(struct fs_fd* fd)
 {
-
+	return convert_retval( fat_fs.ops->close(fd) );
 }
 int file_lseek(struct fs_fd* fd, off_t offset)
 {
-
+	return convert_retval( fat_fs.ops->lseek(fd, offset) );
 }
 int file_unlink(const char *path)
 {
+	struct fs_fd *dummy = NULL;
+	int ret = fat_fs.ops->unlink(dummy, path);
+	if(ret == 0){
+		int idx = 0;
+		for(; idx < FS_FD_MAX; idx++){
+			if(strcmp(fd_table[idx].path, path)==0){
+				memset(&fd_table[idx], '\0', sizeof(struct fs_fd));
+			}
+		}
+	}
+	return convert_retval(ret);
 }
 
 

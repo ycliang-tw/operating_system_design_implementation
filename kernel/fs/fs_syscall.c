@@ -137,7 +137,7 @@ off_t sys_lseek(int fd, off_t offset, int whence)
 	if(offset < 0 || whence < 0){
 		return -STATUS_EINVAL;
 	}
-
+	
 	struct fs_fd *file = fd_get(fd);
 	if(whence == SEEK_END){
 		offset += file->size;
@@ -151,7 +151,7 @@ off_t sys_lseek(int fd, off_t offset, int whence)
 	}
 	file->pos = offset;
 	int ret = file_lseek(file, offset);
-	fd_put(fd);
+	fd_put(file);
 
 	return ret;
 }

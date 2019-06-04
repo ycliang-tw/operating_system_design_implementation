@@ -3,6 +3,7 @@
 #include <inc/string.h>
 #include <inc/shell.h>
 #include <inc/assert.h> 
+#include <kernel/fs/fat/ff.h>
 
 char hist[SHELL_HIST_MAX][BUF_LEN];
 
@@ -91,8 +92,22 @@ int chgcolor(int argc, char **argv)
 
 int listfile(int argc, char **argv)
 {
+	DIR dir;
+	FILINFO finfo;
+
 	if(argc <= 1){
 		cprintf("File or path does not exist!\n");
+		return 0;
+	}
+	if(opendir(&dir, argv[1]) < 0){
+		cprintf("Cannot open dir %s\n", argv[1]);
+		return 0;
+	}
+
+	readdir(&dir, &finfo);
+	while(finfo.fname[0]){
+		cprintf("filename: %s, size: %d, dir/file: %s\n", finfo.fname, finfo.fsize, (finfo.fattrib & AM_DIR)? "dir":"file" );
+		readdir(&dir, &finfo);
 	}
 	return 0;
 }
